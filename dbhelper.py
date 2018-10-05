@@ -44,11 +44,10 @@ class dbhelper:
         except pymysql.IntegrityError as e:
             return str(e)
 
-    def insert(self,datauser,chat_id):
+    def insert(self,nik,name,loker,account_type,created_at,chat_id):
         sql = "INSERT INTO `user` (`nik`, `name`, `loker`,\
         `account_type`, `created_at`) VALUES ('{}', '{}', '{}','{}', {});"\
-        .format(*datauser.values()) 
-        
+        .format(nik,name,loker,account_type,created_at) 
         try:
             self.cursor.execute(sql)
             sqltelegram = "INSERT INTO `user_telegram` ( `id_user`, `id_telegram`) VALUES \

@@ -97,14 +97,13 @@ class HadirEvent(telepot.helper.ChatHandler):
                     print(3)
                     if not db.get_user('nik',self.data_user['nik']):
                         print(6)
-                        data = {}
                         # data['id_user'] = None
-                        data['nik'] = self.data_user['nik']
-                        data['name'] = self.data_user['nama']
-                        data['loker'] = self.data_user['loker']
-                        data['account_type'] = 'MEMBER'
-                        data['created_at'] = 'CURRENT_TIMESTAMP'
-                        insert_user = db.insert(data,chat_id)
+                        nik = self.data_user['nik']
+                        name = self.data_user['nama']
+                        loker = self.data_user['loker']
+                        account_type = 'MEMBER'
+                        created_at = 'CURRENT_TIMESTAMP'
+                        insert_user = db.insert(nik,name,loker,account_type,created_at,chat_id)
                         self._send_message('Data anda tersimpan. {}'.format(insert_user),self.keyboard)
                         self._state = ''
                         self._state_input = 'loker'
@@ -136,7 +135,7 @@ class HadirEvent(telepot.helper.ChatHandler):
             if user_telegram:
                 user = db.get_user('id_user',user_telegram[0][1])  
                 self._send_message('\
-                    NIK------------:{}\nNama--------:{}\nLoker---------:{}'.format(user[0][1],user[0][2],user[0][3]),self.keyboard)
+                    NIK------------:{}\nNama--------:{}\nLoker---------:{}'.format(user[0][1],user[0][3],user[0][4]),self.keyboard)
             else:
                 self._send_message('Anda belum terdaftar. Klik daftar.',self.keyboard)
 
