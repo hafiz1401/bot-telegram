@@ -101,7 +101,7 @@ class HadirEvent(telepot.helper.ChatHandler):
                         nik = self.data_user['nik']
                         name = self.data_user['nama']
                         loker = self.data_user['loker']
-                        account_type = 'MEMBER'
+                        account_type = 'member'
                         created_at = 'CURRENT_TIMESTAMP'
                         insert_user = db.insert(nik,name,loker,account_type,created_at,chat_id)
                         self._send_message('Data anda tersimpan. {}'.format(insert_user),self.keyboard)
