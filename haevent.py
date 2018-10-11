@@ -104,13 +104,13 @@ class HadirEvent(telepot.helper.ChatHandler):
                         account_type = 'member'
                         created_at = 'CURRENT_TIMESTAMP'
                         insert_user = db.insert(nik,name,loker,account_type,created_at,chat_id)
-                        self._send_message('Data anda tersimpan. {}'.format(insert_user),self.keyboard)
+                        self._send_message('Data anda tersimpan.',self.keyboard)
                         self._state = ''
                         self._state_input = 'loker'
 
                     else:
                         print(7)
-                        sent = self.sender.sendMessage('Data nik anda telah . {}'.format(insert_user))
+                        sent = self.sender.sendMessage('Data nik anda telah.')
         else:
             self._send_message('Silahkan kaka ...',self.keyboard)
             self.close()
@@ -142,12 +142,12 @@ class HadirEvent(telepot.helper.ChatHandler):
         elif query_data =='bind':
             id_user = db.get_user('nik',self.data_user['nik'],'id_user')
             bind = db.bind(id_user[0][0],from_id)
-            self._send_message('Bind berhasil. {}'.format(bind),self.keyboard)
+            self._send_message('Bind berhasil.',self.keyboard)
             self._state = ''
 
         elif query_data == 'unbind':
             unbind = db.unbind(from_id)
-            self._send_message('Unbind berhasil. {}'.format(unbind),self.keyboard)
+            self._send_message('Unbind berhasil.',self.keyboard)
             self._state = ''
 
 # TOKEN = sys.argv[1]  # get token from command-line
