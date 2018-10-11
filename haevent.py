@@ -127,21 +127,23 @@ class HadirEvent(telepot.helper.ChatHandler):
             else:  
                 self._state = None
                 id_user = db.get_user_telegram(from_id)
-                nik = db.get_user('id_user',id_user[0][1])[0][1]
+                print(id_user)
+                nik = db.get_user('id_user',id_user[0]['id_user'])[0]['nik']
                 self._send_message('Akun Telegram anda telah terhubung dengan NIK: {}'.format(nik),self.unbind_keyboard)
         elif query_data == 'lihatData':
             self._cancel_markup()
             user_telegram = db.get_user_telegram(from_id)
             if user_telegram:
-                user = db.get_user('id_user',user_telegram[0][1])  
+                user = db.get_user('id_user',user_telegram[0]['id_user'])  
                 self._send_message('\
-                    NIK------------:{}\nNama--------:{}\nLoker---------:{}'.format(user[0][1],user[0][3],user[0][4]),self.keyboard)
+                    NIK------------:{}\nNama--------:{}\nLoker---------:{}'.format(user[0]['nik'],user[0]['name'],user[0]['loker']),self.keyboard)
             else:
                 self._send_message('Anda belum terdaftar. Klik daftar.',self.keyboard)
 
         elif query_data =='bind':
             id_user = db.get_user('nik',self.data_user['nik'],'id_user')
-            bind = db.bind(id_user[0][0],from_id)
+            print(id_user)
+            bind = db.bind(id_user[0]['id_user'],from_id)
             self._send_message('Bind berhasil.',self.keyboard)
             self._state = ''
 
