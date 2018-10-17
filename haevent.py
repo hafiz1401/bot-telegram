@@ -29,8 +29,10 @@ class HadirEvent(telepot.helper.ChatHandler):
         self._editor = ''
         self.keyboard = InlineKeyboardMarkup(
                     inline_keyboard=[
-                    [InlineKeyboardButton(text='Daftar', callback_data='daftar'),
+                    [
+                    InlineKeyboardButton(text='Daftar', callback_data='daftar'),
                     InlineKeyboardButton(text='Lihat Data', callback_data='lihatData'),
+                    InlineKeyboardButton(text='Absen', callback_data='absen'),
                     ],
                     [],
                     [],
@@ -53,6 +55,9 @@ class HadirEvent(telepot.helper.ChatHandler):
                     ],
                     ]
                 )
+        self.absen_replykeyboard = ReplyKeyboardMarkup(keyboard=[
+                     [KeyboardButton(text='Hadir', request_location=True)],
+                 ],one_time_keyboard=True)
     def _cancel_last(self):
         if self._editor:
             self._editor.deleteMessage()
@@ -111,9 +116,73 @@ class HadirEvent(telepot.helper.ChatHandler):
                     else:
                         print(7)
                         sent = self.sender.sendMessage('Data nik anda telah.')
+        elif self._state == 'absen':
+            if self._state_input == 'absen': 
+                self._cancel_last()
+                self.data_user['kode_event'] = msg['text']
+                self.id_user = db.get_user_telegram(chat_id)['id_user']
+                self.event = db.get_event('id_event',self.data_user['kode_event'])
+                if self.event:
+                    if any(d.get('id_user') == self.id_user for d in db.get_event_user('id_event',self.data_user['kode_event'], 'id_user')):
+                        self._send_message('{}\n{}\n{}\n{}'.format(self.event['event_name'],self.event['event_venue'],self.event['event_start'],self.event['event_end']))
+                        if self.event['bot_absen'] == 1:
+                            if not db.get_event_participant(self.event['id_event'],self.id_user):
+                                self._send_message('Klik Hadir',self.absen_replykeyboard)                    
+                                self._state_input = 'kode_event'
+                            else:
+                                self._send_message('Anda telah absen.',self.keyboard)
+                                self._state = ''
+                                self._state_input = ''
+                        else:
+                            self._send_message('Tidak dapat absen lewat bot.',self.keyboard)
+                            self._state = ''
+                            self._state_input = ''
+                    else:
+                        self._send_message('Anda tidak dapat absen untuk event tersebut.',self.keyboard)
+                        self._state = ''
+                        self._state_input = ''
+                else:
+                    self._send_message('Event tidak dikenali.',self.keyboard)
+                    self._state = ''
+                    self._state_input = ''
+                    
+            elif self._state_input == 'kode_event':
+                location = msg['location']
+                # self._cancel_last()
+                check_radius = db.check_radius(location['latitude'],location['longitude'],self.event['latitude'],self.event['longitude'])
+
+                if check_radius <= self.event['radius']:
+                    db.insert_event_participant(self.event['id_event'],self.id_user,1)
+                    self._send_message('Anda berhasil absen.',ReplyKeyboardRemove())
+                else:
+                    db.insert_event_participant(self.event['id_event'],self.id_user,2)
+                    self._send_message('Lokasi anda terlalu jauh dari event. Anda harus berada dalam radius {} km. Untuk saat ini data anda tersimpan dengan status Di Luar Lokasi.'.format(self.event['radius']),ReplyKeyboardRemove())
+                self._state = ''
+                self._state_input = ''
+
+        elif self._state == 'cek_event':
+            location = msg['location']
+            check_radius = db.check_radius(location['latitude'],location['longitude'],self.event['latitude'],self.event['longitude'])
+            self._send_message(check_radius*1000)    
+            self._state = ''
+            self._state_input = ''
         else:
-            self._send_message('Silahkan kaka ...',self.keyboard)
-            self.close()
+            if msg['text'].upper().startswith('/CEK'):
+                kode_event = msg['text'].split(' ')[1]
+                self._cancel_last()
+                self.event = db.get_event('id_event',kode_event)
+                if self.event:
+                    self._send_message('{}\n{}\n{}\n{}'.format(self.event['event_name'],self.event['event_venue'],self.event['event_start'],self.event['event_end']))
+                    self._send_message('Klik Hadir',self.absen_replykeyboard)                    
+                    self._state = 'cek_event'
+                else:
+                    self._send_message('Event tidak dikenali.',self.keyboard)
+                    self._state = ''
+                    self._state_input = ''
+
+            else:    
+                self._send_message('Silahkan kaka ...',self.keyboard)
+                self.close()
 
     def on_callback_query(self, msg):
         query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
@@ -126,17 +195,26 @@ class HadirEvent(telepot.helper.ChatHandler):
                 self._state_input = 'daftar'
             else:  
                 self._state = None
-                id_user = db.get_user_telegram(from_id)
+                id_user = db.get_user_telegram(from_id)['id_user']
                 print(id_user)
-                nik = db.get_user('id_user',id_user[0]['id_user'])[0]['nik']
+                nik = db.get_user('id_user',id_user)[0]['nik']
                 self._send_message('Akun Telegram anda telah terhubung dengan NIK: {}'.format(nik),self.unbind_keyboard)
         elif query_data == 'lihatData':
             self._cancel_markup()
             user_telegram = db.get_user_telegram(from_id)
             if user_telegram:
-                user = db.get_user('id_user',user_telegram[0]['id_user'])  
+                user = db.get_user('id_user',user_telegram['id_user'])  
                 self._send_message('\
                     NIK------------:{}\nNama--------:{}\nLoker---------:{}'.format(user[0]['nik'],user[0]['name'],user[0]['loker']),self.keyboard)
+            else:
+                self._send_message('Anda belum terdaftar. Klik daftar.',self.keyboard)
+        elif query_data == 'absen':
+            self._cancel_markup()
+            user_telegram = db.get_user_telegram(from_id)
+            if user_telegram:
+                self._send_message('Masukkan Kode Event:')
+                self._state = 'absen'
+                self._state_input = 'absen'
             else:
                 self._send_message('Anda belum terdaftar. Klik daftar.',self.keyboard)
 
@@ -157,7 +235,7 @@ TOKEN = '692089019:AAHR_d7I0VRer2BELku90RHlzP6m7fp14DY'
 bot = telepot.DelegatorBot(TOKEN, [
     include_callback_query_chat_id(
     pave_event_space())(
-        per_chat_id(), create_open, HadirEvent, timeout=100
+        per_chat_id(), create_open, HadirEvent, timeout=500
     ),
 ])
 
