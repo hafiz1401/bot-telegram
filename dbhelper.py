@@ -319,3 +319,39 @@ class dbhelper:
         c = 2 * asin(sqrt(a)) 
         r = 6371 # Radius of earth in kilometers. Use 3956 for miles
         return c * r
+
+    def get_broadcast(self):
+        # result = ''
+        self.connection = pymysql.connect(host='localhost',
+                             user='root',
+                             password='',
+                             db=self.dbname,
+                             charset='utf8mb4',
+                             cursorclass=pymysql.cursors.DictCursor)
+        try:
+            with self.connection.cursor() as cursor:
+                sql = "SELECT * FROM broadcast"
+                cursor.execute(sql)
+                result = cursor.fetchall()
+        finally:
+            self.connection.close()
+
+        return result
+
+    def delete_broadcast(self,id_broadcast):
+        self.connection = pymysql.connect(host='localhost',
+                             user='root',
+                             password='',
+                             db=self.dbname,
+                             charset='utf8mb4',
+                             cursorclass=pymysql.cursors.DictCursor)
+        try:
+            with self.connection.cursor() as cursor:
+                sql = "DELETE FROM broadcast WHERE `id_broadcast` = {}".format(id_broadcast)
+                cursor.execute(sql)
+                result = cursor.fetchall()
+                self.connection.commit()
+        finally:
+            self.connection.close()
+
+        return result

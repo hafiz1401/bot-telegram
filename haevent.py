@@ -33,6 +33,19 @@ class HadirEvent(telepot.helper.ChatHandler):
                     InlineKeyboardButton(text='Daftar', callback_data='daftar'),
                     InlineKeyboardButton(text='Lihat Data', callback_data='lihatData'),
                     InlineKeyboardButton(text='Absen', callback_data='absen'),
+                    InlineKeyboardButton(text='Order', callback_data='order'),
+                    ],
+                    [],
+                    [],
+                    [],
+                    ]
+                )
+        self.loker = InlineKeyboardMarkup(
+                    inline_keyboard=[
+                    [
+                    InlineKeyboardButton(text='DAMAN', callback_data='daman'),
+                    InlineKeyboardButton(text='AMO', callback_data='amo'),
+                    InlineKeyboardButton(text='ASO', callback_data='aso'),
                     ],
                     [],
                     [],
@@ -218,20 +231,27 @@ class HadirEvent(telepot.helper.ChatHandler):
             else:
                 self._send_message('Anda belum terdaftar. Klik daftar.',self.keyboard)
 
-        elif query_data =='bind':
+        elif query_data =='bind' :
             id_user = db.get_user('nik',self.data_user['nik'],'id_user')
             print(id_user)
             bind = db.bind(id_user[0]['id_user'],from_id)
             self._send_message('Bind berhasil.',self.keyboard)
             self._state = ''
-
+        # elif query_data == 'order':
+            
         elif query_data == 'unbind':
             unbind = db.unbind(from_id)
             self._send_message('Unbind berhasil.',self.keyboard)
             self._state = ''
 
 # TOKEN = sys.argv[1]  # get token from command-line
-TOKEN = '692089019:AAHR_d7I0VRer2BELku90RHlzP6m7fp14DY'
+if sys.version[0] == '3':
+    # @developmentdamanbot
+    TOKEN = '694699130:AAG4S3Tb9uxxxPHjbl5fP-QiNsjOehOhieM'
+else:
+    # @haeventbot
+    TOKEN = '692089019:AAHR_d7I0VRer2BELku90RHlzP6m7fp14DY'
+
 bot = telepot.DelegatorBot(TOKEN, [
     include_callback_query_chat_id(
     pave_event_space())(
