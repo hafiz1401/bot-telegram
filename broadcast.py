@@ -6,6 +6,7 @@ import re
 import requests
 import threading
 import time
+from datetime import datetime
 from dbhelper import dbhelper
 db = dbhelper()
 # @developmentdamanbot:
@@ -74,7 +75,7 @@ def build_keyboard(items):
 ## Fungsi utama yang memulai serangkaian perintah lainnya
 def main():
     print('Running')
-    from datetime import datetime
+    
     while True:
         to_broadcast =  db.get_broadcast()
         thread = []

@@ -1,0 +1,28 @@
+unit
+	id unit
+	nama unit
+
+list order
+	id list order
+	id unit
+	nama order (jenis)
+	kode list order
+
+list field
+	id list field
+	id list order
+	nama (field)
+	tipe (field)
+
+trx order
+	id trx
+	order by
+	status order
+	id list order
+
+trx dertail order
+	id trx detail
+	id trx
+	id list field
+	value
+	

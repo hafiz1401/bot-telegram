@@ -75,7 +75,19 @@ class dbhelper:
 
         return result
 
-    
+    def get_user(self,where,tosearch,toget='*'):
+        # result = ''
+        connection = self.makeConn()
+        try:
+            with connection.cursor() as cursor:
+                sql = "SELECT {} FROM user WHERE `{}` = {}".format(toget,where,tosearch)
+                cursor.execute(sql)
+                result = cursor.fetchall()
+        finally:
+            connection.close()
+
+        return result
+
     def get_user_telegram(self,id_telegram):
         # result = ''
         connection = self.makeConn()
@@ -116,134 +128,6 @@ class dbhelper:
             connection.close()
 
         return result
-
-    def bind(self, id_user, id_telegram):
-        # result = ''
-        connection = self.makeConn()
-        try:
-            with connection.cursor() as cursor:
-                sql = "INSERT INTO `user_telegram` (`id_user`,`id_telegram`) VALUES ('{}','{}')".format(id_user,id_telegram)
-                cursor.execute(sql)
-                result = cursor.fetchall()
-
-            connection.commit()
-        finally:
-            connection.close()
-
-        return result
-
-    def unbind(self, id_telegram):
-        # result = ''
-        connection = self.makeConn()
-        try:
-            with connection.cursor() as cursor:
-                sql = "DELETE FROM `user_telegram` WHERE `id_telegram` = '{}'".format(id_telegram)
-                cursor.execute(sql)
-                result = cursor.fetchall()
-        
-            connection.commit()
-        finally:
-            connection.close()
-
-        return result
-        
-    def haversine(self, lon1, lat1, lon2, lat2):
-        """
-        Calculate the great circle distance between two points 
-        on the earth (specified in decimal degrees)
-        """
-        # convert decimal degrees to radians 
-        lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
-
-        # haversine formula 
-        dlon = lon2 - lon1 
-        dlat = lat2 - lat1 
-        a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
-        c = 2 * asin(sqrt(a)) 
-        r = 6371 # Radius of earth in kilometers. Use 3956 for miles
-        return c * r
-
-    def get_broadcast(self):
-        # result = ''
-        connection = self.makeConn()
-        try:
-            with connection.cursor() as cursor:
-                sql = "SELECT * FROM broadcast"
-                cursor.execute(sql)
-                result = cursor.fetchall()
-        finally:
-            connection.close()
-
-        return result
-
-    def delete_broadcast(self,id_broadcast):
-        connection = self.makeConn()
-        try:
-            with connection.cursor() as cursor:
-                sql = "DELETE FROM broadcast WHERE `id_broadcast` = {}".format(id_broadcast)
-                cursor.execute(sql)
-                result = cursor.fetchall()
-                connection.commit()
-        finally:
-            connection.close()
-
-        return result
-
-class Guest:
-    def __init__(self, dbname="indi_banua"):
-        self.dbname = dbname
-
-    def makeConn(self):
-        connection = pymysql.connect(host='localhost',
-                             user='root',
-                             password='',
-                             db=self.dbname,
-                             charset='utf8mb4',
-                             cursorclass=pymysql.cursors.DictCursor)
-
-        return connection
-
-    def insert_event_guest(self, id_event,nik,nama,instansi,hadir):
-        # result = ''
-        connection = self.makeConn()
-        try:
-            with connection.cursor() as cursor:
-                sql = "INSERT INTO `guest` (`id_event`,`nik`,`nama`,`instansi`,`hadir`) VALUES ('{}','{}','{}','{}','{}');".format(id_event,nik,nama,instansi,hadir) 
-                cursor.execute(sql)
-                result = cursor.fetchall()
-
-            connection.commit()
-        finally:
-            connection.close()
-
-        return result
-class User:
-    def __init__(self, dbname="indi_banua"):
-        self.dbname = dbname
-
-    def makeConn(self):
-        connection = pymysql.connect(host='localhost',
-                             user='root',
-                             password='',
-                             db=self.dbname,
-                             charset='utf8mb4',
-                             cursorclass=pymysql.cursors.DictCursor)
-
-        return connection
-
-    def get_all(self):
-        # result = ''
-        connection = self.makeConn()
-        try:
-            with connection.cursor() as cursor:
-                sql = "SELECT * FROM user"
-                cursor.execute(sql)
-                result = cursor.fetchall()
-        finally:
-            connection.close()
-
-        return result
-
 
     def insert(self,nik,name,loker,account_type,created_at,chat_id):
         # result = ''
@@ -298,12 +182,68 @@ class User:
 
         return result
 
-    def get_user(self,where,tosearch,toget='*'):
+    def bind(self, id_user, id_telegram):
         # result = ''
         connection = self.makeConn()
         try:
             with connection.cursor() as cursor:
-                sql = "SELECT {} FROM user WHERE `{}` = {}".format(toget,where,tosearch)
+                sql = "INSERT INTO `user_telegram` (`id_user`,`id_telegram`) VALUES ('{}','{}')".format(id_user,id_telegram)
+                cursor.execute(sql)
+                result = cursor.fetchall()
+
+            connection.commit()
+        finally:
+            connection.close()
+
+        return result
+
+    def unbind(self, id_telegram):
+        # result = ''
+        connection = self.makeConn()
+        try:
+            with connection.cursor() as cursor:
+                sql = "DELETE FROM `user_telegram` WHERE `id_telegram` = '{}'".format(id_telegram)
+                cursor.execute(sql)
+                result = cursor.fetchall()
+        
+            connection.commit()
+        finally:
+            connection.close()
+
+        return result
+        
+    def password_hash(self,pw):
+        p = subprocess.Popen(['php',os.getcwd()+'\\genpass.php',pw],shell=True,stdout=subprocess.PIPE)
+        result = p.communicate()[0]
+        return result
+
+    def password_verify(self,pw,hashpw):
+        p = subprocess.Popen(['php',os.getcwd()+'\\verpass.php',pw,hashpw],shell=True,stdout=subprocess.PIPE)
+        result = p.communicate()[0]
+        return result
+
+    def haversine(self, lon1, lat1, lon2, lat2):
+        """
+        Calculate the great circle distance between two points 
+        on the earth (specified in decimal degrees)
+        """
+        # convert decimal degrees to radians 
+        lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+
+        # haversine formula 
+        dlon = lon2 - lon1 
+        dlat = lat2 - lat1 
+        a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+        c = 2 * asin(sqrt(a)) 
+        r = 6371 # Radius of earth in kilometers. Use 3956 for miles
+        return c * r
+
+    def get_broadcast(self):
+        # result = ''
+        connection = self.makeConn()
+        try:
+            with connection.cursor() as cursor:
+                sql = "SELECT * FROM broadcast"
                 cursor.execute(sql)
                 result = cursor.fetchall()
         finally:
@@ -311,7 +251,46 @@ class User:
 
         return result
 
+    def delete_broadcast(self,id_broadcast):
+        connection = self.makeConn()
+        try:
+            with connection.cursor() as cursor:
+                sql = "DELETE FROM broadcast WHERE `id_broadcast` = {}".format(id_broadcast)
+                cursor.execute(sql)
+                result = cursor.fetchall()
+                connection.commit()
+        finally:
+            connection.close()
 
+        return result
+
+class User:
+    def __init__(self, dbname="indi_banua"):
+        self.dbname = dbname
+
+    def makeConn(self):
+        connection = pymysql.connect(host='localhost',
+                             user='root',
+                             password='',
+                             db=self.dbname,
+                             charset='utf8mb4',
+                             cursorclass=pymysql.cursors.DictCursor)
+
+        return connection
+
+    def get_all(self):
+        # result = ''
+        connection = self.makeConn()
+        try:
+            with connection.cursor() as cursor:
+                sql = "SELECT * FROM user"
+                cursor.execute(sql)
+                result = cursor.fetchall()
+        finally:
+            connection.close()
+
+        return result
+        
 class Order:
     def __init__(self, dbname="indi_order"):
         self.dbname = dbname
@@ -330,14 +309,14 @@ class Order:
 
         return connection
 
-    def insert(self,loker_tujuan,order_by,order,jenis):
+    def insert(self,loker,order_by,order,jenis,keterangan):
         # result = ''
         connection = self.makeConn()
         try:
             with connection.cursor() as cursor:
-                sql = "INSERT INTO `data_order` (`loker_tujuan`, `order_by`, `order`,`jenis`)\
-                    VALUES ('{}', '{}', '{}','{}');"\
-                    .format(loker_tujuan,order_by,order,jenis)
+                sql = "INSERT INTO `order` (`loker`, `order_by`, `order`,`jenis`,`keterangan`)\
+                    VALUES ('{}', '{}', '{}','{}','{}');"\
+                    .format(loker,order_by,order,jenis,keterangan) 
                 cursor.execute(sql)
                 result = cursor.fetchall()
                 connection.commit()
